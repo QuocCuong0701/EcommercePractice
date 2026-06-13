@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  # ===================================================================
+  # PHẦN 1: CƠ SỞ DỮ LIỆU (Databases)
+  # ===================================================================
+  postgres:
+    image: postgres:16                                # Image Postgres version 16
+    environment: # Biến môi trường cấu hình DB
+      POSTGRES_DB: ecommerce
+      POSTGRES_USER: ecommerce
+      POSTGRES_PASSWORD: ecommerce123
+    ports:
+      - "5432:5432"                                   # Port của host:Port container
+    volumes: # Volume để dữ liệu không mất khi restart
+      - pgdata:/var/lib/postgresql/data               # Mount named-volume pgdata vào thư mục của PG
+    healthcheck:
+      test: [ "CMD-SHELL","pg_isready -U ecommerce" ] # Lệnh test: PG đã sẵn sàng nhận kết nối chưa
+      interval: 10s                                   # Chu kỳ kiểm tra mỗi 10s
+      timeout: 5s                                     # Timeout mỗi lần test
+      retries: 5                                      # Thử lại 5 lần trước khi đánh fail
+
+  redis:
+    image: redis:7-alpine # Redis 7 bản alpine
+    ports:
+      - "6379:6379" # Port mặc định của redis
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru # Override CMD: giới hạn RAM 256MB
+    # Khi đầy sẽ xoá key dùng ít nhất (LRU)
+    healthcheck:
+      test: [ "CMD","redis-cli","ping" ] # Test bằng lệnh ping (trả về pong nếu ok)
+      interval: 10s
+
+  # ===================================================================
+  # PHẦN 2: MESSAGE BROKER (Kafka + Zookeeper)
+  # ===================================================================
+
+  # Zookeeper quản lý cluster cho Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0 # Image Zookeeper từ Confluent
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181 # Cổng client kết nối đến ZK
+
+  # Kafka
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0 # Image Kafka từ Confluent
+    depends_on: [ zookeeper ] # Bắt buộc chờ ZK khởi động trước
+    ports:
+      - "9092:9092" # Cổng broker cho client kết nối
+    environment:
+      KAFKA_BROKER_ID: 1 # ID duy nhất của broker trong cluster
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181 # Trỏ tới service ZK
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092 # Địa chỉ mà client dùng để kết nối (PLAINTEXT = Ko mã hoá)
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 # Số bản sao topic offet (1 = ko replicate, dev only)
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true # Tự tạo topic khi producer/consumer publish lần
+
+  # Kafka UI
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest # Web UI cho Kafka
+    ports:
+      - "8090:8080" # Truy cập http://localhost:8080
+    environment:
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092 # Trỏ UI tới broker Kafka ở trên
+
+  # ===================================================================
+  # PHẦN 3: SEARCH ENGINE
+  # ===================================================================
+
+  # --- Elasticsearch: Tìm kiếm full-text & phân tích log ---
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node # chạy 1 node ko cần cluster
+      - xpack.security.enabled=false # Tắt xác thực bảo mật
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m # JVM heap: min/max 512MB
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data # Lưu dữ liệu index vào volume
+
+  # ===================================================================
+  # PHẦN 4: MONITORING (Giám sát hệ thống)
+  # ===================================================================
+
+  # --- Prometheus: Thu thập & lưu trữ metrics ---
+  prometheus:
+    image: prom/prometheus:v2.48.0                  # Image Prometheus
+    ports:
+      - "9090:9090"                                 # Truy cập http://localhost:9090
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      # Mount file cấu hình scrape từ host
+
+  # --- Grafana: Dashboard trực quan hóa metrics ---
+  grafana:
+    image: grafana/grafana:10.2.0                   # Image Grafana
+    ports:
+      - "3000:3000"                                 # Truy cập http://localhost:3000
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin             # Password admin mặc định (user: admin)
+    volumes:
+      - grafana-data:/var/lib/grafana               # Lưu dashboard, datasource
+
+  # ===================================================================
+  # PHẦN 5: FRONTEND
+  # ===================================================================
+
+  # --- Nginx: Web server phục vụ frontend tĩnh ---
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./ecommerce-fe/public:/usr/share/nginx/html     # Mount thư mục frontend tĩnh
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf    # Mount file cấu hình Nginx
+
+# ---------------------------------------------------------------------
+# Khai báo named-volume (dữ liệu persist khi container bị xóa)
+# ---------------------------------------------------------------------
+volumes:
+  pgdata:                                          # Volume lưu dữ liệu PostgreSQL
+  esdata:                                          # Volume lưu dữ liệu Elasticsearch
+  grafana-data:                                    # Volume lưu cấu hình/dashboard Grafana

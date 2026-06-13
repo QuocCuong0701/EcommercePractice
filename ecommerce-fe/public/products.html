@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sản phẩm - E-Commerce</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="/" class="logo">E-Commerce</a>
+            <nav>
+                <a href="/products.html" class="active">Sản phẩm</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container products-page">
+        <aside class="filter-sidebar">
+            <h3>Bộ lọc</h3>
+            <div class="filter-group">
+                <label>Danh mục</label>
+                <select id="categoryFilter">
+                    <option value="">Tất cả</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Giá</label>
+                <input type="number" id="minPrice" placeholder="Từ" min="0">
+                <input type="number" id="maxPrice" placeholder="Đến" min="0">
+            </div>
+            <button class="btn btn-primary btn-filter" onclick="applyFilters()">Áp dụng</button>
+        </aside>
+
+        <section class="product-section">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Tìm sản phẩm..." onkeyup="handleSearch(event)">
+            </div>
+            <div id="loading" class="loading hidden">Đang tải...</div>
+            <div id="error" class="error hidden"></div>
+            <div id="productGrid" class="product-grid"></div>
+            <div id="pagination" class="pagination"></div>
+        </section>
+    </main>
+
+    <script type="module" src="/js/product.js"></script>
+</body>
+</html>

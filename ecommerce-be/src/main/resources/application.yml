@@ -1,0 +1,104 @@
+spring:
+  application:
+    name: ecommerce-api
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ecommerce
+    username: ecommerce
+    password: ecommerce123
+    hikari:
+      pool-name: EcommercePool
+      maximum-pool-size: 10 # (core count * 2) + 1
+      minimum-idle: 3 # So ket noi san sang toi thieu
+      connection-timeout: 3000 # 3s - timeout cho ket noi
+      idle-timeout: 600000 # 10m - dong ket noi nhan roi
+      max-lifetime: 1800000 # 30m - song toi da cua 1 ket noi
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_batch_fetch_size: 50  # tranh N+1 query
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 10 # Toi da 10 ket noi redis
+          min-idle: 2 # Luon giu san 2 ket noi
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer # Key message = String
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer # Value = JSON
+      acks: all # Cho tat ca replica ghi xong
+      # - acks=0: Gui xong không quan tâm (nhanh, mat data)
+      # - acks=1: Leader ghi xong là OK (mat data neu leader die truoc khi replication)
+      # - acks=all: An toàn nhat
+      retries: 3
+      properties:
+        enable.idempotence: true # Tranh trung message
+    consumer:
+      group-id: ecommerce-service
+      auto-offset-reset: earliest # Bat dau doc tu dau neu chua co offset
+      key-deserializer: org.apache.kafka.common.serialization.StringSerializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.trusted.packages: "com.ecommerce.event" # Cho phep deserialize trong package nay
+        # - Kafka nhan JSON -> can deserialize thành object Java
+        # - Spring Kafka mac dinh khong tin bat ky package nào (bao mat)
+        # - Phai khai bao: "com.ecommerce.event" -> chi deserialize class trong package nay
+    listener:
+      ack-mode: manual_immediate # dam bao chi ack khi thuc su xu lý xong, tranh mat message
+
+  # JWT
+  app:
+    jwt:
+      secret: "your-secret-key-min-256-bits-long-please-change-this"
+      expiration-ms: 86400000    # 24 gio
+      refresh-expiration-ms: 604800000  # 7 ngay
+
+  # Actuator + Prometheus
+  management:
+    endpoints:
+      health:
+        show-details: always
+      web:
+        exposure:
+          include: health, prometheus, metrics, info # Endpoint nào duoc expose
+    metrics:
+      tags:
+        application: ecommerce-api
+      distribution:
+        percentiles-histogram:
+          http.server.requests: true # Tu dong tinh histogram cho request
+        # Prometheus goi /actuator/prometheus thay:
+        # http_server_requests_seconds_bucket{le="0.1"}  -> 100 request < 100ms
+        # http_server_requests_seconds_bucket{le="0.5"}  -> 200 request < 500ms
+        # http_server_requests_seconds_bucket{le="1"}    -> 250 request < 1s
+        # http_server_requests_s econds_bucket{le="+Inf"} -> 260 request total
+        # -> Grafana ve: 99% request duoi 1s, p50 = ~100ms, p95 = ~500ms, p99 = ~800ms
+        percentiles:
+          http.server.requests: 0.5, 0.95, 0.99 # Theo dõi p50, p95, p99
+
+#  App khoi dong
+#  |-- 1. Flyway: kiem tra/chay migration DB -> Tạo bang
+#  |-- 2. Hibernate validate: entity khop DB?
+#  |-- 3. HikariCP: tạo pool ket noi (3 idle, max 10)
+#  |-- 4. Redis pool: 2 idle, max 10
+#  |-- 5. Kafka consumer: join group "ecommerce-service", san sang nhan message
+#  |-- 6. JWT: load secret key, san sang ky/verify token
+#  |-- 7. Actuator: expose /health, /prometheus, /metrics
+#  -> App san sang nhan request

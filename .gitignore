@@ -1,0 +1,38 @@
+# ── Maven / Java ──────────────────────────────────
+ecommerce-be/.idea/
+ecommerce-be/target/
+ecommerce-be/*.class
+ecommerce-be/*.jar
+ecommerce-be/*.war
+ecommerce-be/*.log
+ecommerce-be/.env
+ecommerce-be/.mvn/wrapper/maven-wrapper.jar
+
+# ── Frontend (npm) ────────────────────────────────
+ecommerce-fe/.idea/
+ecommerce-fe/node_modules/
+ecommerce-fe/dist/
+ecommerce-fe/build/
+ecommerce-fe/.env
+ecommerce-fe/*.log
+
+# ── IDE ───────────────────────────────────────────
+.idea/
+*.iml
+*.iws
+.vscode/
+*.swp
+*.swo
+*~
+
+# ── OS ────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── Docker ────────────────────────────────────────
+*.env
+
+# ── Logs ──────────────────────────────────────────
+*.log
+/logs/
