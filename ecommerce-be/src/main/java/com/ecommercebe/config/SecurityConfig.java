@@ -13,15 +13,14 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/categories/**").permitAll()
                         .requestMatchers("/api/v1/products/**").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/prometheus").permitAll()
-                        .anyRequest().authenticated())
-        ;
+                        .anyRequest().authenticated());
         return http.build();
     }
 }
