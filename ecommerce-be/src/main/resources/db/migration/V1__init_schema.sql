@@ -1,5 +1,5 @@
 -- V1__init_schema.sql
-CREATE TABLE categories
+CREATE TABLE IF NOT EXISTS categories
 (
     id         UUID PRIMARY KEY             DEFAULT gen_random_uuid(),
     name       VARCHAR(100)        NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE categories
     created_at TIMESTAMP           NOT NULL DEFAULT now()
 );
 
-CREATE TABLE products
+CREATE TABLE IF NOT EXISTS products
 (
     id             UUID PRIMARY KEY             DEFAULT gen_random_uuid(),
     category_id    UUID REFERENCES categories (id),
@@ -25,7 +25,7 @@ CREATE TABLE products
     updated_at     TIMESTAMP           NOT NULL DEFAULT now()
 );
 
-CREATE TABLE inventory
+CREATE TABLE IF NOT EXISTS inventory
 (
     id         UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
     product_id UUID UNIQUE NOT NULL REFERENCES products (id),

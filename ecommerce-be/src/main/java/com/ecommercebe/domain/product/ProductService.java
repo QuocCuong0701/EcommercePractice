@@ -2,6 +2,7 @@ package com.ecommercebe.domain.product;
 
 import com.ecommercebe.dto.ProductDetailDto;
 import com.ecommercebe.dto.ProductSummaryDto;
+import com.ecommercebe.dto.enumtype.ProductStatus;
 import com.ecommercebe.exception.ProductNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,5 +53,11 @@ public class ProductService {
 
     public void evictCache(String slug) {
         redisTemplate.delete(CACHE_PREFIX + slug);
+    }
+
+    public ProductDetailDto findById(UUID id) {
+        Product product = productRepository.findByIdAndStatus(id, ProductStatus.ACTIVE)
+                .orElseThrow(() -> new ProductNotFoundException("Sản phẩm không tồn tại: " + id));
+        return ProductDetailDto.from(product);
     }
 }

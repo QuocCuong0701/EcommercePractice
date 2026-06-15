@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ hàng - E-Commerce</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="/" class="logo">E-Commerce</a>
+            <nav></nav>
+        </div>
+    </header>
+
+    <main class="container cart-page">
+        <h1>Giỏ hàng</h1>
+        <div id="cartLoading" class="loading">Đang tải...</div>
+        <div id="cartError" class="error hidden"></div>
+        <div id="cartEmpty" class="cart-empty hidden">
+            <p>Giỏ hàng trống</p>
+            <a href="/products.html" class="btn btn-primary">Mua sắm ngay</a>
+        </div>
+        <div id="cartContent" class="cart-content hidden">
+            <div id="cartItems" class="cart-items"></div>
+            <div class="cart-summary">
+                <div class="cart-total">
+                    <span>Tổng cộng:</span>
+                    <span id="cartTotal">0₫</span>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="checkout()">Thanh toán</button>
+                <button class="btn btn-block btn-outline" onclick="clearAll()">Xóa giỏ hàng</button>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="/js/header.js"></script>
+    <script type="module">
+        import { getCart, updateCartItem, removeCartItem, clearCart } from '/js/cart.js';
+        import { isLoggedIn } from '/js/auth.js';
+
+        if (!isLoggedIn()) {
+            window.location.href = '/login.html';
+        }
+
+        function showLoading() {
+            document.getElementById('cartLoading').classList.remove('hidden');
+            document.getElementById('cartError').classList.add('hidden');
+            document.getElementById('cartEmpty').classList.add('hidden');
+            document.getElementById('cartContent').classList.add('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('cartLoading').classList.add('hidden');
+        }
+
+        function formatPrice(num) {
+            return new Intl.NumberFormat('vi-VN').format(num) + '₫';
+        }
+
+        async function loadCart() {
+            showLoading();
+            try {
+                const cart = await getCart();
+                hideLoading();
+
+                if (!cart.items || cart.items.length === 0) {
+                    document.getElementById('cartEmpty').classList.remove('hidden');
+                    return;
+                }
+
+                document.getElementById('cartContent').classList.remove('hidden');
+                renderItems(cart.items);
+                document.getElementById('cartTotal').textContent = formatPrice(cart.total);
+            } catch (err) {
+                hideLoading();
+                const errEl = document.getElementById('cartError');
+                errEl.textContent = err.message || 'Không thể tải giỏ hàng';
+                errEl.classList.remove('hidden');
+            }
+        }
+
+        function renderItems(items) {
+            const container = document.getElementById('cartItems');
+            container.innerHTML = items.map(item => {
+                const img = item.image || 'https://placehold.co/200x200/e5e7eb/9ca3af?text=No+Image';
+                const subtotal = item.price * item.quantity;
+
+                return `
+                    <div class="cart-item" data-product-id="${item.productId}">
+                        <img src="${img}" alt="${item.productName}" class="cart-item-img">
+                        <div class="cart-item-info">
+                            <h3>${item.productName}</h3>
+                            <p class="cart-item-price">${formatPrice(item.price)}</p>
+                        </div>
+                        <div class="cart-item-qty">
+                            <button onclick="changeQty('${item.productId}', ${item.quantity - 1})" ${item.quantity <= 1 ? 'disabled' : ''}>−</button>
+                            <span>${item.quantity}</span>
+                            <button onclick="changeQty('${item.productId}', ${item.quantity + 1})" ${item.quantity >= item.maxQuantity ? 'disabled' : ''}>+</button>
+                        </div>
+                        <div class="cart-item-subtotal">${formatPrice(subtotal)}</div>
+                        <button class="cart-item-remove" onclick="removeItem('${item.productId}')">✕</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.changeQty = async function(productId, newQty) {
+            if (newQty < 0) return;
+            try {
+                const cart = await updateCartItem(productId, newQty);
+                renderItems(cart.items);
+                document.getElementById('cartTotal').textContent = formatPrice(cart.total);
+            } catch (err) {
+                loadCart();
+            }
+        };
+
+        window.removeItem = async function(productId) {
+            try {
+                const cart = await removeCartItem(productId);
+                if (!cart.items || cart.items.length === 0) {
+                    document.getElementById('cartContent').classList.add('hidden');
+                    document.getElementById('cartEmpty').classList.remove('hidden');
+                } else {
+                    renderItems(cart.items);
+                    document.getElementById('cartTotal').textContent = formatPrice(cart.total);
+                }
+            } catch (err) {
+                loadCart();
+            }
+        };
+
+        window.clearAll = async function() {
+            if (!confirm('Xóa toàn bộ giỏ hàng?')) return;
+            try {
+                await clearCart();
+                document.getElementById('cartContent').classList.add('hidden');
+                document.getElementById('cartEmpty').classList.remove('hidden');
+            } catch (err) {
+                loadCart();
+            }
+        };
+
+        window.checkout = function() {
+            alert('Tính năng thanh toán sẽ được phát triển ở Phase 3');
+        };
+
+        loadCart();
+    </script>
+</body>
+</html>

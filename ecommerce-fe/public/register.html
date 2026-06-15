@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - E-Commerce</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="/" class="logo">E-Commerce</a>
+            <nav></nav>
+        </div>
+    </header>
+
+    <main class="container auth-page">
+        <div class="auth-card">
+            <h1>Đăng ký</h1>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="fullName">Họ tên</label>
+                    <input type="text" id="fullName" required placeholder="Nguyễn Văn A">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="password">Mật khẩu</label>
+                    <input type="password" id="password" required placeholder="••••••••" minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Xác nhận mật khẩu</label>
+                    <input type="password" id="confirmPassword" required placeholder="••••••••" minlength="6">
+                </div>
+                <div id="registerError" class="form-error hidden"></div>
+                <button type="submit" class="btn btn-primary btn-block">Đăng ký</button>
+            </form>
+            <p class="auth-alt">Đã có tài khoản? <a href="/login.html">Đăng nhập</a></p>
+        </div>
+    </main>
+
+    <script type="module" src="/js/header.js"></script>
+    <script type="module">
+        import { register } from '/js/auth.js';
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const errEl = document.getElementById('registerError');
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirmPassword').value;
+
+            if (password !== confirm) {
+                errEl.textContent = 'Mật khẩu xác nhận không khớp';
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Đang xử lý...';
+            errEl.classList.add('hidden');
+
+            try {
+                await register(
+                    document.getElementById('email').value,
+                    password,
+                    document.getElementById('fullName').value
+                );
+                window.location.href = '/';
+            } catch (err) {
+                errEl.textContent = err.message;
+                errEl.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Đăng ký';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sản phẩm - E-Commerce</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="/" class="logo">E-Commerce</a>
+            <nav></nav>
+        </div>
+    </header>
+
+    <main class="container product-detail-page">
+        <div id="pdLoading" class="loading">Đang tải...</div>
+        <div id="pdError" class="error hidden"></div>
+        <div id="pdContent" class="hidden">
+            <div class="product-detail">
+                <div class="pd-gallery">
+                    <img id="pdImage" src="" alt="">
+                </div>
+                <div class="pd-info">
+                    <h1 id="pdName"></h1>
+                    <div class="pd-pricing">
+                        <span id="pdPrice" class="pd-current-price"></span>
+                        <span id="pdOriginalPrice" class="pd-original-price"></span>
+                        <span id="pdDiscount" class="pd-discount-badge hidden"></span>
+                    </div>
+                    <p id="pdDescription" class="pd-description"></p>
+                    <div class="pd-actions">
+                        <div class="pd-qty">
+                            <button onclick="pdChangeQty(-1)">−</button>
+                            <input type="number" id="pdQty" value="1" min="1" readonly>
+                            <button onclick="pdChangeQty(1)">+</button>
+                        </div>
+                        <button id="addToCartBtn" class="btn btn-primary btn-lg" onclick="pdAddToCart()">Thêm vào giỏ hàng</button>
+                    </div>
+                    <div id="pdCartMsg" class="form-success hidden"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="/js/header.js"></script>
+    <script type="module">
+        import { apiFetch } from '/js/api.js';
+        import { addToCart } from '/js/cart.js';
+        import { isLoggedIn } from '/js/auth.js';
+
+        const params = new URLSearchParams(window.location.search);
+        const slug = params.get('slug');
+        if (!slug) {
+            document.getElementById('pdLoading').classList.add('hidden');
+            document.getElementById('pdError').classList.remove('hidden');
+            document.getElementById('pdError').textContent = 'Không tìm thấy sản phẩm';
+        }
+
+        function formatPrice(num) {
+            return new Intl.NumberFormat('vi-VN').format(num) + '₫';
+        }
+
+        async function loadProduct() {
+            try {
+                const product = await apiFetch(`/products/${slug}`);
+                document.getElementById('pdLoading').classList.add('hidden');
+                document.getElementById('pdContent').classList.remove('hidden');
+
+                document.getElementById('pdName').textContent = product.name;
+                document.getElementById('pdImage').src = product.image || 'https://placehold.co/600x600/e5e7eb/9ca3af?text=No+Image';
+                document.getElementById('pdImage').alt = product.name;
+                document.getElementById('pdPrice').textContent = formatPrice(product.price);
+                document.getElementById('pdDescription').textContent = product.description || '';
+
+                if (product.originalPrice && product.originalPrice > product.price) {
+                    const discount = Math.round((1 - product.price / product.originalPrice) * 100);
+                    document.getElementById('pdOriginalPrice').textContent = formatPrice(product.originalPrice);
+                    document.getElementById('pdOriginalPrice').classList.remove('hidden');
+                    const badge = document.getElementById('pdDiscount');
+                    badge.textContent = `-${discount}%`;
+                    badge.classList.remove('hidden');
+                }
+
+                window._pd = product;
+            } catch (err) {
+                document.getElementById('pdLoading').classList.add('hidden');
+                const errEl = document.getElementById('pdError');
+                errEl.textContent = err.message || 'Không thể tải sản phẩm';
+                errEl.classList.remove('hidden');
+            }
+        }
+
+        window.pdChangeQty = function(delta) {
+            const input = document.getElementById('pdQty');
+            let val = parseInt(input.value) + delta;
+            if (val < 1) val = 1;
+            input.value = val;
+        };
+
+        window.pdAddToCart = async function() {
+            if (!isLoggedIn()) {
+                window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                return;
+            }
+
+            const product = window._pd;
+            const qty = parseInt(document.getElementById('pdQty').value);
+            const btn = document.getElementById('addToCartBtn');
+            const msg = document.getElementById('pdCartMsg');
+
+            btn.disabled = true;
+            btn.textContent = 'Đang thêm...';
+            msg.classList.add('hidden');
+
+            try {
+                await addToCart(
+                    product.id,
+                    product.name,
+                    product.image,
+                    product.price,
+                    qty,
+                    999
+                );
+                msg.textContent = '✓ Đã thêm vào giỏ hàng';
+                msg.classList.remove('hidden');
+            } catch (err) {
+                msg.textContent = err.message || 'Thêm thất bại';
+                msg.classList.remove('hidden');
+                msg.className = msg.className.replace('form-success', 'form-error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Thêm vào giỏ hàng';
+            }
+        };
+
+        if (slug) loadProduct();
+    </script>
+</body>
+</html>

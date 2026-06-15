@@ -19,6 +19,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     Optional<Product> findBySlug(String slug);
 
+    Optional<Product> findByIdAndStatus(UUID id, ProductStatus status);
+
     // Lọc theo category + price range
     @Query("""
             SELECT p FROM Product p
