@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết quả đơn hàng - E-Commerce</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="/" class="logo">E-Commerce</a>
+            <nav></nav>
+        </div>
+    </header>
+
+    <main class="container" style="padding-top:24px;padding-bottom:40px;">
+        <h1 id="confirmation-title" class="confirmation-title" style="text-align:center;color:var(--success);">Đặt hàng thành công!</h1>
+        <div class="confirmation-box" style="text-align:center;background:#fff;padding:2rem;border-radius:var(--radius);box-shadow:var(--shadow);margin:2rem 0;">
+            <p>Mã đơn hàng: <strong id="order-number"></strong></p>
+            <p>Tổng tiền: <strong id="order-total"></strong></p>
+            <div id="confirmation-msg" class="confirmation-msg" style="text-align:center;color:var(--gray-600);margin:1rem 0;">
+                <p>Vui lòng kiểm tra email để xác nhận đơn hàng.</p>
+            </div>
+        </div>
+        <div style="text-align:center;margin-top:1rem;">
+            <a href="/order-history.html" class="btn btn-primary">Xem đơn hàng của tôi</a>
+            <a href="/products.html" class="btn btn-outline" style="margin-left:0.5rem;">Tiếp tục mua sắm</a>
+        </div>
+    </main>
+
+    <script type="module" src="/js/header.js"></script>
+    <script type="module" src="/js/order.js"></script>
+</body>
+</html>

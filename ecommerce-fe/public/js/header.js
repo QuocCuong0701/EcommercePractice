@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (loggedIn) {
         links.push({ href: '/cart.html', text: '🛒 Giỏ hàng', cls: '' });
+        links.push({ href: '/order-history.html', text: '📋 Đơn hàng', cls: '' });
         links.push({ href: '#', text: `👋 ${displayName}`, cls: '' });
         links.push({ href: '#', text: 'Đăng xuất', cls: 'logout-btn' });
     } else {

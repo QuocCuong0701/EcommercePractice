@@ -652,6 +652,36 @@ body {
     }
 }
 
+/* ===== Phase 3: Order & Payment ===== */
+.form-row { display: flex; gap: 1rem; }
+.form-row .form-group { flex: 1; }
+
+.cart-total { font-size: 1.1rem; text-align: right; margin-top: 0.5rem; }
+
+.badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px;
+         font-size: 0.8rem; font-weight: 600; }
+.badge.pending_payment { background: #fff3cd; color: #856404; }
+.badge.paid { background: #d4edda; color: #155724; }
+.badge.processing { background: #cce5ff; color: #004085; }
+.badge.shipped { background: #d6d8db; color: #383d41; }
+.badge.delivered { background: #d4edda; color: #155724; }
+.badge.cancelled { background: #f8d7da; color: #721c24; }
+.badge.refunded { background: #e2e3e5; color: #383d41; }
+
+.order-summary { background: var(--gray-100); padding: 1rem; border-radius: var(--radius); margin: 1rem 0; }
+.order-summary p { display: flex; justify-content: space-between; margin: 0.25rem 0; font-size: 0.9rem; }
+
+.confirmation-box { text-align: center; background: #fff; padding: 2rem; border-radius: var(--radius); box-shadow: var(--shadow); margin: 2rem 0; }
+.confirmation-box p { margin: 0.5rem 0; font-size: 1.1rem; }
+.confirmation-title { text-align: center; color: var(--success); }
+
+.payment-box { text-align: center; background: #fff; padding: 2rem; border-radius: var(--radius); box-shadow: var(--shadow); margin: 2rem 0; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-row { flex-direction: column; gap: 0; }
+}
+
 /* Pagination */
 .pagination {
     display: flex;

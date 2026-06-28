@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác nhận thanh toán - E-Commerce</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="/" class="logo">E-Commerce</a>
+            <nav></nav>
+        </div>
+    </header>
+
+    <main class="container" style="padding-top:24px;padding-bottom:40px;">
+        <h1>Xác nhận thanh toán</h1>
+        <div class="payment-box">
+            <div id="order-info"></div>
+            <button id="pay-btn" class="btn btn-primary" style="margin-top:1.5rem;font-size:1.1rem;padding:0.8rem 3rem;">Xác nhận thanh toán</button>
+            <div id="pay-result" style="margin-top:1rem;"></div>
+        </div>
+        <a href="/order-history.html" class="btn" style="margin-top:1rem;">Quay lại đơn hàng</a>
+    </main>
+
+    <script type="module" src="/js/header.js"></script>
+    <script type="module" src="/js/payment.js"></script>
+</body>
+</html>

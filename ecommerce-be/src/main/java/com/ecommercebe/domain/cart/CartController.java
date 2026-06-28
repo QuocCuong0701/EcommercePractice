@@ -6,6 +6,7 @@ import com.ecommercebe.dto.UpdateCartRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -18,33 +19,35 @@ public class CartController {
     private final CartService cartService;
 
     @GetMapping
-    public ResponseEntity<CartDto> getCart(@RequestHeader("X-User-Id") UUID userId) {
-        return ResponseEntity.ok(cartService.getCart(userId));
+    public ResponseEntity<CartDto> getCart() {
+        return ResponseEntity.ok(cartService.getCart(getCurrentUserId()));
     }
 
     @PostMapping("/items")
-    public ResponseEntity<CartDto> addItem(@RequestHeader("X-User-Id") UUID userId,
-                                           @Valid @RequestBody AddToCartRequest request) {
-        cartService.addItem(userId, request.getProductId(), request.getQuantity());
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> addItem(@Valid @RequestBody AddToCartRequest request) {
+        return ResponseEntity.ok(cartService.addItem(getCurrentUserId(), request.getProductId(), request.getQuantity()));
     }
 
     @PutMapping("/items/{productId}")
-    public ResponseEntity<CartDto> updateItem(@RequestHeader("X-User-Id") UUID userId, @PathVariable UUID productId,
+    public ResponseEntity<CartDto> updateItem(@PathVariable UUID productId,
                                               @Valid @RequestBody UpdateCartRequest request) {
-        cartService.updateQuantity(userId, productId, request.getQuantity());
+        cartService.updateQuantity(getCurrentUserId(), productId, request.getQuantity());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/items/{productId}")
-    public ResponseEntity<CartDto> removeItem(@RequestHeader("X-User-Id") UUID userId, @PathVariable UUID productId) {
-        cartService.removeItem(userId, productId);
+    public ResponseEntity<CartDto> removeItem(@PathVariable UUID productId) {
+        cartService.removeItem(getCurrentUserId(), productId);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> clearCart(@RequestHeader("X-User-Id") UUID userId) {
-        cartService.clearCart(userId);
+    public ResponseEntity<Void> clearCart() {
+        cartService.clearCart(getCurrentUserId());
         return ResponseEntity.noContent().build();
+    }
+
+    private UUID getCurrentUserId() {
+        return (UUID) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

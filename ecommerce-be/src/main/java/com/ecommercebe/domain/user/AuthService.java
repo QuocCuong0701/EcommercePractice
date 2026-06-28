@@ -5,6 +5,7 @@ import com.ecommercebe.dto.AuthResponse;
 import com.ecommercebe.dto.LoginRequest;
 import com.ecommercebe.dto.RefreshRequest;
 import com.ecommercebe.dto.RegisterRequest;
+import com.ecommercebe.dto.enumtype.Role;
 import com.ecommercebe.dto.enumtype.UserStatus;
 import com.ecommercebe.exception.AccountDisabledException;
 import com.ecommercebe.exception.BadCredentialsException;
@@ -30,7 +31,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final RedisTemplate<String, Object> redisTemplate;
 
-    private static final String BLACKLIST_PREFIX = "blacklist:refresh";
+    private static final String BLACKLIST_PREFIX = "blacklist:refresh:";
 
     @Transactional(rollbackFor = Exception.class)
     public AuthResponse register(RegisterRequest request) {
@@ -38,6 +39,8 @@ public class AuthService {
             throw new EmailAlreadyExistsException("Email đã được sử dụng");
         }
         User user = new User();
+        user.setRole(Role.CUSTOMER);
+        user.setStatus(UserStatus.ACTIVE);
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());

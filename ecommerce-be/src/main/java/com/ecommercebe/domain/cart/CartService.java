@@ -63,7 +63,7 @@ public class CartService {
         }
     }
 
-    public void addItem(UUID userId, UUID productId, int quantity) {
+    public String addItem(UUID userId, UUID productId, int quantity) {
         ProductDetailDto product = productService.findById(productId);
 
         String key = cartKey(userId);
@@ -80,8 +80,10 @@ public class CartService {
                 .quantity(currentQty + quantity)
                 .build();
 
-        redisTemplate.opsForHash().put(key, productIdStr, toJson(item));
+        String json = toJson(item);
+        redisTemplate.opsForHash().put(key, productIdStr, json);
         redisTemplate.expire(key, CART_TTL);
+        return json;
     }
 
     public void updateQuantity(UUID userId, UUID productId, int quantity) {

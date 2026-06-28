@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán - E-Commerce</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="/" class="logo">E-Commerce</a>
+            <nav></nav>
+        </div>
+    </header>
+
+    <main class="container" style="padding-top:24px;padding-bottom:40px;">
+        <h1>Xác nhận đơn hàng</h1>
+        <div id="cart-summary"></div>
+
+        <form id="checkout-form">
+            <h2>Địa chỉ giao hàng</h2>
+            <div class="form-group">
+                <label>Họ tên người nhận</label>
+                <input type="text" id="fullName" required>
+            </div>
+            <div class="form-group">
+                <label>Số điện thoại</label>
+                <input type="tel" id="phone" required>
+            </div>
+            <div class="form-group">
+                <label>Địa chỉ</label>
+                <input type="text" id="address" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tỉnh/Thành phố</label>
+                    <input type="text" id="province" required>
+                </div>
+                <div class="form-group">
+                    <label>Quận/Huyện</label>
+                    <input type="text" id="district" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Ghi chú</label>
+                <textarea id="notes"></textarea>
+            </div>
+
+            <h2>Phương thức thanh toán</h2>
+            <div class="form-group">
+                <select id="paymentMethod">
+                    <option value="COD">Thanh toán khi nhận hàng (COD)</option>
+                    <option value="BANK_TRANSFER">Chuyển khoản ngân hàng</option>
+                    <option value="VNPAY">VNPay</option>
+                    <option value="MOMO">Ví MoMo</option>
+                </select>
+            </div>
+
+            <button type="submit" id="checkout-btn" class="btn btn-primary">Đặt hàng</button>
+        </form>
+    </main>
+
+    <script type="module" src="/js/header.js"></script>
+    <script type="module" src="/js/checkout.js"></script>
+</body>
+</html>

@@ -43,3 +43,23 @@ async function refreshToken() {
         return false;
     }
 }
+
+export function formatVND(amount) {
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+    }).format(amount);
+}
+
+export function statusText(status) {
+    const map = {
+        PENDING_PAYMENT: 'Chờ thanh toán',
+        PAID: 'Đã thanh toán',
+        PROCESSING: 'Đang xử lý',
+        SHIPPED: 'Đang giao',
+        DELIVERED: 'Đã giao',
+        CANCELLED: 'Đã hủy',
+        REFUNDED: 'Đã hoàn tiền',
+    };
+    return map[status] || status;
+}
